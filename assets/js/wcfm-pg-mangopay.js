@@ -45,6 +45,8 @@
       this.user_business_type = "#mangopay_user_business_type";
       this.mangopay_billing_country = "#mangopay_billing_country";
       this.submit_mp = "#submit_mp";
+      this.mangopay_section_menu_item =
+        "#mangopay_wrapper_section_options ul li a";
     },
 
     bindEvents: function () {
@@ -73,6 +75,11 @@
         "click",
         this.submit_mp,
         this.createMangopayAcount.bind(this)
+      );
+      this.document.on(
+        "click",
+        this.mangopay_section_menu_item,
+        this.changeMangopaySection
       );
     },
 
@@ -314,6 +321,15 @@
         errorContainer.text(errorMessage).css({ color: "red" });
         return false; // Validation failed
       }
+    },
+
+    changeMangopaySection: function (event) {
+      event.preventDefault();
+      $("#mangopay_wrapper_section_options ul li a").removeClass("active");
+      $(this).addClass("active");
+      var link = $(this).attr("data-link");
+      $(".mangopay_information_section").hide();
+      $("#" + link).show();
     },
   };
 

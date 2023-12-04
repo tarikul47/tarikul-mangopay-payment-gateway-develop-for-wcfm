@@ -19,9 +19,171 @@
     min-height: 35px;
     max-width: 100%;
     box-shadow: 1px 1px 5px 0 #E9E9E9;
-    background-color: #fff!important;
-    border: 1px solid #ccc!important;
+    background-color: #fff !important;
+    border: 1px solid #ccc !important;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
+}
+
+/* #mangopay_wrapper_businessinfo {
+  border: 1px solid #eee;
+  padding: 15px 0 15px 15px;
+  margin: 15px 0;
+} */
+.mangopay_information_section h3 {
+    color: #17a2b8;
+    font-size: 18px;
+    font-style: italic;
+}
+
+#ajax_loader {
+    margin-left: 15px;
+    display: none;
+}
+
+#bi_updated {
+    margin-left: 15px;
+    display: none;
+}
+
+#mangopay_wrapper_uboinfo {
+    margin-bottom: 15px;
+}
+
+#mangopay_wrapper_uboinfo #ubo_data {
+    flex-direction: column;
+    width: 100%;
+}
+
+#wcfm_settings_form .wcfm-tabWrap {
+    overflow-y: scroll;
+}
+
+#mangopay_wrapper_uboinfo input[type="button"],
+#mangopay_wrapper_businessinfo input[type="button"] {
+    background-color: #1c2b36;
+    color: #b0bec5;
+    border-radius: 4px;
+}
+
+#mangopay_wrapper_uboinfo input[type="button"]:hover,
+#mangopay_wrapper_businessinfo input[type="button"]:hover {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.wcfm-dashboard-page .scrollToTop {
+    bottom: 60px;
+}
+
+.mp_notice_common,
+.mp_imp_notice_common,
+.mp_success_notice_common {
+    padding: 10px;
+    margin-bottom: 2px;
+}
+
+.mp_notice_common {
+    font-weight: 700;
+    background-color: #9e9e9e;
+    color: #fff;
+}
+
+.mp_success_notice_common {
+    font-weight: 700;
+    background-color: #156b12;
+    color: #fff;
+}
+
+.mp_imp_notice_common {
+    background-color: #fff;
+    color: #242424;
+    border: 1px solid #9e9e9e;
+}
+
+.mp_imp_notice_common h6 {
+    margin-bottom: 5px;
+}
+
+.mp_imp_notice_common p {
+    padding: 0px !important;
+}
+
+#mangopay_kyc_notice {
+    background-color: #9e9e9e;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.kyc-detail-table {
+    border: 1px solid #eee !important;
+    margin-top: 0 !important;
+}
+
+.kyc-detail-header {
+    background-color: #ccc;
+}
+
+.kyc-detail-table tr:nth-child(odd) td {
+    background-color: #eee !important;
+}
+
+/* .kyc-detail-table .kyc-date{
+    text-transform: uppercase;
+  } */
+
+#mangopay_wrapper_uboinfo,
+#mangopay_wrapper_kyc,
+#mangopay_wrapper_bank_account {
+    display: none;
+}
+
+#mangopay_wrapper_section_options {
+    margin-top: 40px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#mangopay_wrapper_section_options ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#mangopay_wrapper_section_options ul li {
+    display: inline-block;
+}
+
+#mangopay_wrapper_section_options ul li a {
+    padding: 10px 15px;
+    margin-right: 10px;
+}
+
+#mangopay_wrapper_section_options ul li a.active {
+    background-color: #9e9e9e;
+    color: #fff;
+}
+
+.mangopay-headlines {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.mangopay-headlines .img_tip {
+    margin-right: 10px;
+}
+
+.mangopay-headlines h3 {
+    margin-bottom: 0;
+}
+
+#wcfm-main-contentainer input[type="datepicker"].wcfm_validation_failed {
+    border-left: 6px solid #f86c6b !important;
 }
