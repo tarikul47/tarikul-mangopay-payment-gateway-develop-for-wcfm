@@ -61,6 +61,8 @@ class WCFM_PG_MangoPay
 
 		add_action("wp_ajax_create_mp_account", array(&$this, "create_mp_account"));
 
+		add_action("wp_ajax_update_mp_business_information", array(&$this, "update_mp_business_information"));
+
 		// Load Gateway Class
 		require_once $this->plugin_path . 'gateway/class-wcfmmp-gateway-mangopay.php';
 	}
@@ -78,6 +80,13 @@ class WCFM_PG_MangoPay
 			'ajaxurl' => admin_url('admin-ajax.php'),
 			'states' => WC()->countries->get_states()
 		]);
+	}
+
+	public function update_mp_business_information()
+	{
+		echo "<pre>";
+		print_r($_POST);
+		die();
 	}
 
 	// create mp account 
@@ -298,7 +307,7 @@ class WCFM_PG_MangoPay
 	public function wcfmmp_custom_pg_vendor_setting($vendor_billing_fields, $vendor_id)
 	{
 		$gateway_slug  = WCFMpgmp_GATEWAY;
-		
+
 		// site home url 
 		$site_url = home_url('mangopay-terms-conditions');
 

@@ -121,7 +121,7 @@ $vendor_user_mp_register_fields += array(
     ),
 
     $gateway_slug . '_billing_country' => array(
-        'label'                 => __('Billing Country', 'wc-multivendor-marketplace'),
+        'label'                 => __('Legal Representative Country Of Residence', 'wc-multivendor-marketplace'),
         'type'                  => 'select',
         'options'               => WC()->countries->get_countries(),
         'name'                  => 'payment[' . $gateway_slug . '][billing_country]',

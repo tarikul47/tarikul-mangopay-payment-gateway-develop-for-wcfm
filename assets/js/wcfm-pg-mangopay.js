@@ -47,6 +47,7 @@
       this.submit_mp = "#submit_mp";
       this.mangopay_section_menu_item =
         "#mangopay_wrapper_section_options ul li a";
+      this.mangopay_update_btn = "#update_business_information";
     },
 
     bindEvents: function () {
@@ -81,6 +82,11 @@
         this.mangopay_section_menu_item,
         this.changeMangopaySection
       );
+      this.document.on(
+        "click",
+        this.mangopay_update_btn,
+        this.updateBusinessInformation.bind(this)
+      );
     },
 
     createMangopayAcount: function (event) {
@@ -98,7 +104,9 @@
       // console.log("mp_nationality", $("#mangopay_nationality").val());
       // console.log("mp_billing_country", $("#mangopay_billing_country").val());
       // console.log("mp_billing_state", $("#mangopay_billing_state").val());
+
       console.log("user_mp_status", $("#mangopay_user_mp_status").val());
+
       console.log(
         "user_business_type",
         $("#mangopay_user_mp_status").val() != "individual"
@@ -226,6 +234,178 @@
         });
       } else {
         console.log("Validation failed");
+      }
+    },
+
+    updateBusinessInformation: function (event) {
+      event.preventDefault();
+      let $loader = $("#ajax_loader");
+      let $updated = $("#bi_updated");
+      $loader.show();
+
+      /**
+       * vendor id
+       * Birthday
+       * Nationality
+       * Legal Representative Country Of Residence
+       * Legal Representative Email
+       * Company Number
+       */
+
+      // Business Information
+      console.log("vendor_id", $("#mangopay_vendor_id").val());
+      console.log("user_birthday", $("#mangopay_birthday").val());
+      console.log("user_nationality", $("#mangopay_nationality").val());
+      console.log("billing_country", $("#mangopay_billing_country").val());
+      console.log("legal_email", $("#mangopay_legal_email").val());
+      console.log("compagny_number", $("#mangopay_compagny_number").val());
+
+      // Headquartes Address
+      console.log("headquarters_addressline1", $("#mangopay_hq_address").val());
+      console.log(
+        "headquarters_addressline2",
+        $("#mangopay_hq_address2").val()
+      );
+      console.log("headquarters_city", $("#mangopay_hq_city").val());
+      console.log("headquarters_region", $("#mangopay_hq_region").val());
+      console.log(
+        "headquarters_postalcode",
+        $("#mangopay_hq_postalcode").val()
+      );
+      console.log("headquarters_country", $("#mangopay_hq_country").val());
+
+      // terms accept
+      console.log(
+        "IsChecked",
+        $("#mangopay_termsAndConditionsAccepted").prop("checked")
+      );
+
+      /**
+       * Mangopay form validation
+       */
+      var isValid = true;
+
+      const validationBusinessFields = [
+        {
+          fieldId: "#mangopay_birthday",
+          errorMessage: "Please select your birthday",
+        },
+        {
+          fieldId: "#mangopay_nationality",
+          errorMessage: "Please select your nationality",
+        },
+        {
+          fieldId: "#mangopay_billing_country",
+          errorMessage: "Please select your billing country",
+        },
+        {
+          fieldId: "#mangopay_legal_email",
+          errorMessage: "Please enter your legal email",
+        },
+        {
+          fieldId: "#mangopay_compagny_number",
+          errorMessage: "Please enter compagny number",
+        },
+        {
+          fieldId: "#mangopay_hq_address",
+          errorMessage: "Please enter compagny number",
+        },
+        {
+          fieldId: "#mangopay_hq_city",
+          errorMessage: "Please enter compagny number",
+        },
+        {
+          fieldId: "#mangopay_hq_region",
+          errorMessage: "Please enter compagny number",
+        },
+        {
+          fieldId: "#mangopay_hq_postalcode",
+          errorMessage: "Please enter compagny number",
+        },
+        {
+          fieldId: "#mangopay_hq_country",
+          errorMessage: "Please enter compagny number",
+        },
+        // Add more fields as needed
+      ];
+
+      for (const field of validationBusinessFields) {
+        const value = $(field.fieldId).val();
+
+        isValid = app.validateField(
+          value,
+          field.fieldId,
+          field.errorMessage,
+          function () {
+            // Additional logic to execute on successful validation for this field
+          }
+        );
+        if (!isValid) {
+          $loader.hide();
+          break;
+        }
+      }
+
+      if (isValid) {
+        if ($("#mangopay_termsAndConditionsAccepted").prop("checked")) {
+          console.log("ajax call");
+          $("#_termsAndConditions").removeClass("wcfm_validation_failed");
+          $("#mangopay_termsAndConditionsAccepted_error_msg")
+            .find("#error-message")
+            .text("");
+
+          $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: woodmart_settings.ajaxurl,
+            data: {
+              action: "update_mp_business_information",
+              vendor_id: $("#mangopay_vendor_id").val(),
+              user_birthday: $("#mangopay_birthday").val(),
+              user_nationality: $("#mangopay_nationality").val(),
+              billing_country: $("#mangopay_billing_country").val(),
+              legal_email: $("#mangopay_legal_email").val(),
+              compagny_number: $("#mangopay_compagny_number").val(),
+              headquarters_addressline1: $("#mangopay_hq_address").val(),
+              headquarters_addressline2: $("#mangopay_hq_address2").val(),
+              headquarters_city: $("#mangopay_hq_city").val(),
+              headquarters_region: $("#mangopay_hq_region").val(),
+              headquarters_postalcode: $("#mangopay_hq_postalcode").val(),
+              headquarters_country: $("#mangopay_hq_country").val(),
+              termsconditions: $("#mangopay_termsAndConditionsAccepted").prop(
+                "checked"
+              ),
+            },
+            success: function (response) {
+              console.log("response", response);
+              // if (response.success) {
+              //   $updated
+              //     .html("Successfully updated!")
+              //     .css({ color: "green" })
+              //     .show();
+              //   setTimeout(function () {
+              //     $updated.fadeOut(2000);
+              //   }, 5000);
+              // } else {
+              //   $updated.html(response.msg).css({ color: "red" }).show();
+              //   setTimeout(function () {
+              //     $updated.fadeOut(2000);
+              //   }, 5000);
+              // }
+            },
+            complete: function () {
+              $loader.hide();
+            },
+          });
+        } else {
+          $("#_termsAndConditions").addClass("wcfm_validation_failed");
+          $("#mangopay_termsAndConditionsAccepted_error_msg")
+            .find("#error-message")
+            .text("Please agree terms conditions of Mangopay!")
+            .css({ color: "red" });
+          $loader.hide();
+          isValid = false;
+        }
       }
     },
 
