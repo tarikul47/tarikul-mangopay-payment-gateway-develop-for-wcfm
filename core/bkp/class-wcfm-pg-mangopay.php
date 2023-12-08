@@ -20,7 +20,8 @@ class WCFM_PG_MangoPay
 	public $token;
 	public $text_domain;
 	public $mp;
-	public $validation;
+	public $mp_create_on_wcfm;
+	public $mp_update_on_wcfm;
 
 	public function __construct($file)
 	{
@@ -35,8 +36,10 @@ class WCFM_PG_MangoPay
 		$this->version = WCFMpgmp_VERSION;
 		$this->mp = mpAccess::getInstance();
 
-		include "services/class-tarikul-mp-validation.php";
-		$this->validation = new TARIKUL_MP_VALIDATION();
+		include "method/class-mp-create.php";
+		include "method/class-mp-update.php";
+		$this->mp_create_on_wcfm = new TARIKUL_PG_MP_CREATE;
+		$this->mp_update_on_wcfm = new TARIKUL_PG_MP_UPDATE();
 
 		add_action('wcfm_init', array(&$this, 'init'), 10);
 	}
@@ -60,12 +63,13 @@ class WCFM_PG_MangoPay
 		add_filter('mangopay_vendors_required_class', array(&$this, 'set_mangopay_vendors_required_class'));
 
 		// add_action( 'wcfm_vendor_settings_update', array( &$this, 'update_mangopay_settings' ), 10, 2 );
-		add_action('wcfm_wcfmmp_settings_update', array(&$this, 'update_mangopay_settings'), 10, 2);
+//		add_action('wcfm_wcfmmp_settings_update', array(&$this, 'update_mangopay_settings'), 10, 2);
 
 
-		add_action("wp_ajax_create_mp_account", array(&$this, "create_mp_account"));
+		//	add_action("wp_ajax_create_mp_account", array(&$this, "create_mp_account"));
+		add_action("wp_ajax_create_mp_account", array(&$this->mp_create_on_wcfm, "tarikul_create_mp_account"));
 
-		add_action("wp_ajax_update_mp_business_information", array(&$this, "update_mp_business_information"));
+		add_action("wp_ajax_update_mp_business_information", array(&$this->mp_update_on_wcfm, "tarikul_update_mp_business_information"));
 
 		// Load Gateway Class
 		require_once $this->plugin_path . 'gateway/class-wcfmmp-gateway-mangopay.php';
@@ -91,199 +95,99 @@ class WCFM_PG_MangoPay
 		// Get input data
 		$update_input_data = $_POST;
 
-		$update_input_data = $this->mangopay_acount_update_sample_data();
+		$user_id = $update_input_data['vendor_id'];
+
+		//	error_log('$mp_user_id');
+
+		$mp_user_id = $this->mp->set_mp_user($user_id);
+
+		//	error_log($mp_user_id);
 
 		// Validate the input data
 		$validation_result = $this->validate_input($update_input_data);
 
+		if ($validation_result === true) {
 
+			try {
+				// Sanitize the input data
+				$sanitized_data = $this->sanitize_input($update_input_data);
 
+				// Save the sanitized data as user meta
+				$this->save_user_meta($sanitized_data);
 
-		// if ($validation_result === true) {
+				$this->mp->update_user($mp_user_id, $sanitized_data);
 
-		// 	try {
-		// 		// Sanitize the input data
-		// 		$sanitized_data = $this->sanitize_input($update_input_data);
-		// 		//	error_log(print_r($sanitized_data, true));
-		// 		// Save the sanitized data as user meta
-		// 		//	$this->save_user_meta($sanitized_data);
-
-		// 		//	$mp_user_id = $this->mp->set_mp_user($input_data['vendor_id']);
-
-		// 		///	$this->mp->set_mp_wallet($mp_user_id);
-
-		// 		// 	/** Update MP user account **/
-		// 		//	$this->on_shop_settings_saved($input_data['vendor_id']);
-		// 		wp_send_json_success("Successfully You have created Mangopay account!", 200);
-		// 	} catch (Exception  $e) {
-		// 		wp_send_json_error('Something is not going right way!', 500);
-		// 	}
-		// }
+				// 	/** Update MP user account **/
+				//	$this->on_shop_settings_saved($input_data['vendor_id']);
+				wp_send_json_success("Successfully You have created Mangopay account!", 200);
+			} catch (Exception  $e) {
+				wp_send_json_error('Something is not going right way!', 500);
+			}
+		}
 	}
 
-	/**
-	 * Start Mangopay account creation end  
-	 */
+	// create mp account 
 	public function create_mp_account()
 	{
 
 		// Get input data
 		$input_data = $_POST;
 
-		// user id 
-		$user_id = $input_data['vendor_id'];
+		// $input_data = [
+		// 	'action' => '',
+		// 	'vendor_id' => '',
+		// 	'first_name' => '',
+		// 	'last_name' => '',
+		// 	'user_birthday' => '21-12-2023',
+		// 	'user_nationality' => 'AT',
+		// 	'billing_country' => 'BD',
+		// 	'billing_state' => 'BD-17',
+		// 	'user_mp_status' => 'business',
+		// 	//'user_mp_status' => 'individual',
+		// 	'user_business_type' => '',
+		// ];
 
-		$input_data = $this->mangopay_acount_creation_sample_data();
+		/**
+		 * Array
+			(
+				[action] => create_mp_account
+				[vendor_id] => 8
+				[first_name] => test
+				[last_name] => vendor
+				[user_birthday] => 21-12-2023
+				[user_nationality] => AT
+				[billing_country] => BD
+				[billing_state] => BD-17
+				[user_mp_status] => business
+				[user_business_type] => organisation
+			)
+		 */
+
+		if ($input_data['action'] === 'create_mp_account') {
+			unset($input_data['action']);
+		}
 
 		// Validate the input data
 		$validation_result = $this->validate_input($input_data);
 
-		// if ($validation_result === true) {
+		if ($validation_result === true) {
 
-		// 	// try {
-		// 	// 	// Sanitize the input data
-		// 	// 	//	$sanitized_data = $this->sanitize_input($input_data);
+			try {
+				// Sanitize the input data
+				$sanitized_data = $this->sanitize_input($input_data);
 
-		// 	// 	// Save the sanitized data as user meta
-		// 	// 	//	$this->save_user_meta($sanitized_data);
+				// Save the sanitized data as user meta
+				//	$this->save_user_meta($sanitized_data);
 
-		// 	// 	//	$mp_user_id = $this->mp->set_mp_user($input_data['vendor_id']);
+				//	$mp_user_id = $this->mp->set_mp_user($input_data['vendor_id']);
 
-		// 	// 	//	$this->mp->set_mp_wallet($mp_user_id);
+				//	$this->mp->set_mp_wallet($mp_user_id);
 
-		// 	// 	// 	/** Update MP user account **/
-		// 	// 	//	$this->on_shop_settings_saved($input_data['vendor_id']);
-		// 	// 	//	wp_send_json_success("Successfully You have created Mangopay account!", 200);
-		// 	// } catch (Exception  $e) {
-		// 	// 	wp_send_json_error('Something is not going right way!', 500);
-		// 	// }
-		// }
-	}
-
-
-	/**
-	 * End Mangopay account creation end  
-	 */
-
-
-	/**----------
-	 * Common function to validate input data
-	 */
-	public function validate_input($input_data)
-	{
-
-		// Check if 'action' is set
-		if (!isset($input_data['action'])) {
-			wp_send_json_error("Error: 'action' is required.", 400);
-		}
-		$action = $input_data['action'];
-
-		$errors = [];
-
-		// Validate action-specific fields
-		switch ($action) {
-			case 'create_mp_account':
-				$this->validation_for_create_mp_account($input_data, $errors);
-				break;
-			case 'update_mp_business_information':
-				$this->validation_for_update_info($input_data, $errors);
-			default:
-				// Handle unknown action or no action
-				break;
-		}
-
-		error_log(print_r($errors, true));
-
-		// If there are errors, send the error response
-		if (!empty($errors)) {
-			wp_send_json_error($errors, 400);
-		}
-
-		// If validation passes, return true
-		return true;
-	}
-
-
-	private function validation_for_create_mp_account($input_data, &$errors)
-	{
-		// Define create required fields
-		$required_fields = [
-			'payment_method' => 'mangopay',
-			'first_name' => 'First Name',
-			'last_name' => 'Last Name',
-			'user_birthday' => 'User Birthday',
-			'user_nationality' => 'User Nationality',
-			'billing_country' => 'Billing Country',
-			'billing_state' => 'Billing State',
-			'user_mp_status' => 'User MP Status',
-			// 'user_business_type' => 'User Business Type', // Commented out since it's conditionally added
-		];
-
-		// If 'user_mp_status' is 'individual', add 'user_business_type' to the list of required fields
-		if ($input_data['user_mp_status'] === 'business') {
-			$required_fields['user_business_type'] = 'User Business Type';
-		}
-
-		// Validate common and conditionally required fields
-		$this->validate_required_fields($input_data, $required_fields, $errors);
-	}
-
-	private function validation_for_update_info($input_data, &$errors)
-	{
-		// Define create required fields
-		$required_fields = [
-			'user_birthday' => 'User Birthday',
-			'user_nationality' => 'User Nationality',
-			'billing_country' => 'Billing Country',
-			'legal_email' => 'Legal Email',
-			'compagny_number' => 'Company Number',
-			'headquarters_addressline1' => 'Headquarters Addressline1',
-			'headquarters_city' => 'Headquarters City',
-			'headquarters_region' => 'Headquarters Region',
-			'headquarters_postalcode' => 'Headquarters Postalcode',
-			'headquarters_country' => 'Headquarters Country',
-			'termsconditions' => 'Terms Conditions',
-		];
-
-
-		// Validate common required fields
-		$this->validate_required_fields($input_data, $required_fields, $errors);
-	}
-
-	private function validate_required_fields($data, $required_fields, &$errors)
-	{
-		//error_log(print_r($data, true));
-		//error_log(print_r($required_fields, true));
-		//die();
-
-
-		foreach ($required_fields as $field => $label) {
-
-			// Check if the field is empty
-			if (empty($data[$field])) {
-				$errors[$field] = "Error: {$label} is required.";
-			} else {
-				// Additional validation for specific fields
-				switch ($field) {
-					case 'legal_email':
-						// Validate email format
-						if (!filter_var($data[$field], FILTER_VALIDATE_EMAIL)) {
-							$errors[$field] = "Error: {$label} is not a valid email address.";
-						}
-						break;
-					case 'compagny_number':
-						// Validate company number using a custom function
-						$cn_validation = $this->mp->check_company_number_patterns($data[$field]);
-
-						if ($cn_validation != 'found') {
-							$errors[$field] = "Error: {$label} is not a valid.";
-						}
-						break;
-						// Add more cases for other fields
-					default:
-						// No specific validation for other fields
-						break;
-				}
+				// 	/** Update MP user account **/
+				//	$this->on_shop_settings_saved($input_data['vendor_id']);
+				wp_send_json_success("Successfully You have created Mangopay account!", 200);
+			} catch (Exception  $e) {
+				wp_send_json_error('Something is not going right way!', 500);
 			}
 		}
 	}
@@ -294,60 +198,133 @@ class WCFM_PG_MangoPay
 		// Assuming $data['vendor_id'] is the user ID
 		$user_id = $data['vendor_id'];
 
-		//	error_log(print_r($data, true));
+		// Check if it's a create or update action
+		$action = isset($data['action']) ? $data['action'] : '';
 
-		// Check if 'payment_method' is present in $data
-		if (isset($data['payment_method'])) {
-			$vendor_data = get_user_meta($user_id, 'wcfmmp_profile_settings', true);
+		// Update general user meta
+		//$this->update_general_user_meta($user_id, $data);
 
-			if (!$vendor_data || !is_array($vendor_data)) {
-				$vendor_data = array();
-			}
+		// Perform action-specific updates
+		switch ($action) {
+			case 'create_mp_account':
+				$this->mp_account_creation_data_save($user_id, $data);
+				break;
 
-			// Ensure the 'payment' key is an array
-			if (!isset($vendor_data['payment']) || !is_array($vendor_data['payment'])) {
-				$vendor_data['payment'] = array();
-			}
+			case 'update_mp_business_information':
+				$this->update_mp_business_information_data_save($user_id, $data);
+				break;
 
-			// Update 'method' in 'payment' array
-			$vendor_data['payment']['method'] = $data['payment_method'];
+				// Add more cases for other actions if needed
 
-			// Update user meta
-			update_user_meta($user_id, 'wcfmmp_profile_settings', $vendor_data);
+			default:
+				// Handle unknown action or no action
+				break;
 		}
+	}
 
-		// Define an array of fields that require special handling
-		$specialFields = array('first_name', 'last_name', 'user_birthday');
+	private function mp_account_creation_data_save($user_id, $data)
+	{
+	}
 
-		// Loop through data
-		foreach ($data as $key => $value) {
-			// Check if the field is in the specialFields array
-			if (in_array($key, $specialFields)) {
-				// Handle specific fields
-				if ($key === 'first_name') {
-					update_user_meta($user_id, $key, $value);
-					//wc_update_user_address($user_id, array($key => $value), 'billing');
-				} elseif ($key === 'last_name') {
-					update_user_meta($user_id, $key, $value);
-					//wc_update_user_address($user_id, array($key => $value), 'billing');
-				} elseif ($key === 'user_birthday') {
-					// Log the original value for debugging
-					//error_log("Original user_birthday: " . $value);
+	private function update_mp_business_information_data_save($user_id, $data)
+	{
+		//error_log(print_r($data, true));
 
-					// Convert date and log the result for debugging
-					$convertedDate = $this->convertDate($value);
+		// Define common required fields
+		$common_required_fields = [
+			'user_birthday',
+			'user_nationality',
+			'billing_country',
+		];
 
-					//error_log("Converted user_birthday: " . $convertedDate);
+		// Define type-specific required fields and conditions for 'update' action
+		$update_specific_fields = [
+			'legal_email',
+			'compagny_number',
+			'headquarters_addressline1',
+			'headquarters_city',
+			'headquarters_region',
+			'headquarters_postalcode',
+			'headquarters_country',
+			'termsconditions',
+			// Add other fields specific to this type
+		];
 
+		// Validate common required fields
+		$this->save_fields($user_id, $data, $common_required_fields);
+
+		// Validate type-specific fields for 'update' action
+		$this->save_fields($user_id, $data, $update_specific_fields);
+	}
+
+	private function save_fields($user_id, $data, $fields)
+	{
+		foreach ($fields as $field) {
+			// Additional validation for specific fields
+			switch ($field) {
+				case 'payment_method':
+					$vendor_data = get_user_meta($user_id, 'wcfmmp_profile_settings', true);
+
+					if (!$vendor_data || !is_array($vendor_data)) {
+						$vendor_data = array();
+					}
+
+					// Ensure the 'payment' key is an array
+					if (!isset($vendor_data['payment']) || !is_array($vendor_data['payment'])) {
+						$vendor_data['payment'] = array();
+					}
+
+					// Update 'method' in 'payment' array
+					$vendor_data['payment']['method'] = $data['payment_method'];
+
+					// Update user meta
+					update_user_meta($user_id, 'wcfmmp_profile_settings', $vendor_data);
+
+					break;
+				case 'first_name':
+					update_user_meta($user_id, $field, $data[$field]);
+					break;
+				case 'last_name':
+					update_user_meta($user_id, $field, $data[$field]);
+					break;
+				case 'user_birthday':
+					//Convert date and log the result for debugging
+					$convertedDate = $this->convertDate($data[$field]);
 					// Update 'user_birthday' in user meta
-					update_user_meta($user_id, $key, $convertedDate);
-				}
-			} else {
-
-				// Update other user meta
-				update_user_meta($user_id, $key, $value);
+					update_user_meta($user_id, $field, $convertedDate);
+					break;
+				default:
+					// No specific validation for other fields
+					update_user_meta($user_id, $field, $data[$field]);
+					break;
 			}
 		}
+	}
+
+	private function sanitize_input($input_data)
+	{
+		$sanitized_data = array();
+
+		foreach ($input_data as $key => $value) {
+			switch ($key) {
+				case 'legal_email':
+					$sanitized_data[$key] = sanitize_email($value);
+					break;
+
+					// user id skip sanitize
+				case 'vendor_id':
+					$sanitized_data[$key] = $value;
+					break;
+					// Add more cases for other fields
+
+				default:
+					// For general fields, use sanitize_text_field
+					$sanitized_data[$key] = sanitize_text_field($value);
+					break;
+			}
+		}
+
+		return $sanitized_data;
 	}
 
 	public function wcfmmp_custom_pg($payment_methods)
@@ -781,40 +758,39 @@ class WCFM_PG_MangoPay
 		return $html;
 	}
 
-	public function mangopay_acount_creation_sample_data()
+	private function mangopay_acount_creation_sample_data()
 	{
 		return [
-			'action' => 'create_mp_account',
-			'payment_method' => 'mangopayextra',
-			'vendor_id' => '13',
+			'action' => '',
+			'vendor_id' => '',
 			'first_name' => '',
 			'last_name' => '',
-			'user_birthday' => '',
+			'user_birthday' => '21-12-2023',
 			'user_nationality' => 'AT',
-			'billing_country' => '',
+			'billing_country' => 'BD',
 			'billing_state' => 'BD-17',
-			//'user_mp_status' => 'business',
-			'user_mp_status' => 'individual',
+			'user_mp_status' => 'business',
+			//'user_mp_status' => 'individual',
 			'user_business_type' => '',
 		];
 	}
-	public function mangopay_acount_update_sample_data()
+	private function mangopay_acount_update_sample_data()
 	{
 		return [
 			'action' => 'update_mp_business_information',
 			'vendor_id' => '11',
-			'user_birthday' => '',
-			'user_nationality' => 'khhg',
+			'user_birthday' => 'Nove',
+			'user_nationality' => 'FR',
 			'billing_country' => 'FR',
 			'legal_email' => 'tarikul@gmail.com',
 			'compagny_number' => '1255656911',
-			'headquarters_addressline1' => 'nbc',
-			'headquarters_addressline2' => 'kmjhvf',
-			'headquarters_city' => 'jnjhfr',
-			'headquarters_region' => 'juhfdd',
-			'headquarters_postalcode' => 'hgf',
-			'headquarters_country' => 'hhhhh',
-			'termsconditions' => true,
+			'headquarters_addressline1' => '',
+			'headquarters_addressline2' => '',
+			'headquarters_city' => '',
+			'headquarters_region' => '',
+			'headquarters_postalcode' => '',
+			'headquarters_country' => '',
+			'termsconditions' => '',
 		];
 	}
 }

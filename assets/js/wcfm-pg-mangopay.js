@@ -253,32 +253,32 @@
        */
 
       // Business Information
-      console.log("vendor_id", $("#mangopay_vendor_id").val());
-      console.log("user_birthday", $("#mangopay_birthday").val());
-      console.log("user_nationality", $("#mangopay_nationality").val());
-      console.log("billing_country", $("#mangopay_billing_country").val());
-      console.log("legal_email", $("#mangopay_legal_email").val());
-      console.log("compagny_number", $("#mangopay_compagny_number").val());
+      //     console.log("vendor_id", $("#mangopay_vendor_id").val());
+      //     console.log("user_birthday", $("#mangopay_birthday").val());
+      //     console.log("user_nationality", $("#mangopay_nationality").val());
+      //    console.log("billing_country", $("#mangopay_billing_country").val());
+      //    console.log("legal_email", $("#mangopay_legal_email").val());
+      //    console.log("compagny_number", $("#mangopay_compagny_number").val());
 
       // Headquartes Address
-      console.log("headquarters_addressline1", $("#mangopay_hq_address").val());
-      console.log(
-        "headquarters_addressline2",
-        $("#mangopay_hq_address2").val()
-      );
-      console.log("headquarters_city", $("#mangopay_hq_city").val());
-      console.log("headquarters_region", $("#mangopay_hq_region").val());
-      console.log(
-        "headquarters_postalcode",
-        $("#mangopay_hq_postalcode").val()
-      );
-      console.log("headquarters_country", $("#mangopay_hq_country").val());
+      //   console.log("headquarters_addressline1", $("#mangopay_hq_address").val());
+      // console.log(
+      //   "headquarters_addressline2",
+      //   $("#mangopay_hq_address2").val()
+      // );
+      //   console.log("headquarters_city", $("#mangopay_hq_city").val());
+      //   console.log("headquarters_region", $("#mangopay_hq_region").val());
+      // console.log(
+      //   "headquarters_postalcode",
+      //   $("#mangopay_hq_postalcode").val()
+      // );
+      //   console.log("headquarters_country", $("#mangopay_hq_country").val());
 
       // terms accept
-      console.log(
-        "IsChecked",
-        $("#mangopay_termsAndConditionsAccepted").prop("checked")
-      );
+      // console.log(
+      //   "IsChecked",
+      //   $("#mangopay_termsAndConditionsAccepted").prop("checked")
+      // );
 
       /**
        * Mangopay form validation
@@ -308,23 +308,23 @@
         },
         {
           fieldId: "#mangopay_hq_address",
-          errorMessage: "Please enter compagny number",
+          errorMessage: "Please enter headquarters address",
         },
         {
           fieldId: "#mangopay_hq_city",
-          errorMessage: "Please enter compagny number",
+          errorMessage: "Please enter headquarters city",
         },
         {
           fieldId: "#mangopay_hq_region",
-          errorMessage: "Please enter compagny number",
+          errorMessage: "Please enter headquarters region",
         },
         {
           fieldId: "#mangopay_hq_postalcode",
-          errorMessage: "Please enter compagny number",
+          errorMessage: "Please enter headquarters postalcode",
         },
         {
           fieldId: "#mangopay_hq_country",
-          errorMessage: "Please enter compagny number",
+          errorMessage: "Please enter headquarters country",
         },
         // Add more fields as needed
       ];
@@ -377,24 +377,17 @@
               ),
             },
             success: function (response) {
-              console.log("response", response);
-              // if (response.success) {
-              //   $updated
-              //     .html("Successfully updated!")
-              //     .css({ color: "green" })
-              //     .show();
-              //   setTimeout(function () {
-              //     $updated.fadeOut(2000);
-              //   }, 5000);
-              // } else {
-              //   $updated.html(response.msg).css({ color: "red" }).show();
-              //   setTimeout(function () {
-              //     $updated.fadeOut(2000);
-              //   }, 5000);
-              // }
+              console.log("response------", response);
+              if (response.data) {
+                $updated.html(response.data).css({ color: "green" }).show();
+                setTimeout(function () {
+                  $updated.fadeOut(2000);
+                }, 5000);
+              }
             },
             complete: function () {
               $loader.hide();
+              console.log("update function complete");
             },
           });
         } else {
@@ -488,6 +481,8 @@
     validateField: function (value, elementId, errorMessage, callback = null) {
       const element = $(elementId);
       const errorContainer = element.next().find("#error-message");
+
+      // console.log("value", value, elementId, errorMessage);
 
       if (value !== "") {
         element.removeClass("wcfm_validation_failed");

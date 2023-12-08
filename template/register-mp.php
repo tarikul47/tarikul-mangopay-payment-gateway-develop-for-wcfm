@@ -148,7 +148,7 @@ $vendor_user_mp_register_fields += array(
     ),
 );
 
-if (!$user_mp_status) {
+if ($user_mp_status) {
     if ('either' === $this->mp->default_vendor_status) {
         $vendor_user_mp_register_fields += array(
             $gateway_slug . '_user_mp_status' => array(
